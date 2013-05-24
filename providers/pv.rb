@@ -28,20 +28,16 @@ action :create do
       raise "Device #{device} not found."
     end
 
-    if pv_info_in_node_data(device).nil?
-      pv_info = pv_info(device)
-      if pv_info.nil?
-        execute "pvcreate #{device}" do
-          action :nothing
-        end.run_action(:run)
+    pv_info = pv_info(device)
+    if pv_info.nil?
+      execute "pvcreate #{device}" do
+        action :nothing
+      end.run_action(:run)
 
-        pv_info = pv_info(device, true)
-        node.set[:lvm][:pv][device] = pv_info
-        new_resource.updated_by_last_action(true)
-        node.save
-      else
-        Chef::Log.info("Physical volume already created for #{device}.")
-      end
+      pv_info = pv_info(device, true)
+      node.set[:lvm][:pv][device] = pv_info
+      new_resource.updated_by_last_action(true)
+      node.save
     end
   end
 end

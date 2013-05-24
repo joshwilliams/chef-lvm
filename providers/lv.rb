@@ -24,21 +24,17 @@ action :create do
   logical_volume_name = new_resource.logical_volume_name
   expanded_lv_name = expand_lv_name(volume_group_name, logical_volume_name)
 
-  if lv_info_in_node_data(expanded_lv_name).nil?
-    lv_info = lv_info(expanded_lv_name)
-    if lv_info.nil?
-      cmd = "lvcreate -i#{new_resource.stripes} -I#{new_resource.stripe_size} -l #{new_resource.logical_extents} -n #{logical_volume_name} #{volume_group_name}"
-      execute cmd do
-        action :nothing
-      end.run_action(:run)
+  lv_info = lv_info(expanded_lv_name)
+  if lv_info.nil?
+    cmd = "lvcreate -i#{new_resource.stripes} -I#{new_resource.stripe_size} -l #{new_resource.logical_extents} -n #{logical_volume_name} #{volume_group_name}"
+    execute cmd do
+      action :nothing
+    end.run_action(:run)
 
-      lv_info = lv_info(expanded_lv_name, true)
-      node.set[:lvm][:lv][expanded_lv_name] = lv_info
-      new_resource.updated_by_last_action(true)
-      node.save
-    else
-      Chef::Log.info("Logical volume \"#{expanded_lv_name}\" already exists.")
-    end
+    lv_info = lv_info(expanded_lv_name, true)
+    node.set[:lvm][:lv][expanded_lv_name] = lv_info
+    new_resource.updated_by_last_action(true)
+    node.save
   end
 end
 
